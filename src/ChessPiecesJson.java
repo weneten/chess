@@ -3,8 +3,10 @@ import java.nio.file.*;
 import java.util.*;
 
 public class ChessPiecesJson {
+    
     static String turn = "WHITE";
     static int turnCounter;
+    static Map<String, String> currentMap = new LinkedHashMap<>();
 
     public static void main(String[] args) throws Exception {
 
@@ -18,6 +20,7 @@ public class ChessPiecesJson {
         if (choice.equals("LOAD")) {
             String loaded = Files.readString(Paths.get("moves.json"));
             movesMap = parseSimpleJson(loaded);
+            currentMap = new LinkedHashMap<>(startPieces());
             if (movesMap.size() % 2 == 0) {
                 turn = "WHITE";
             } else {
@@ -26,8 +29,17 @@ public class ChessPiecesJson {
             turnCounter = movesMap.size() + 1;
             System.out.println("Spiel geladen. Du bist am Zug.\n");
 
+            movesMap.forEach((k, v) -> {
+                String piece = v.substring(0, 3);
+                String field = v.substring(3, 5);
+                currentMap.put(piece, field);
+                currentMap.values().removeIf(f -> f.equals(field) && !currentMap.get(piece).equals(field));
+            });
+            System.out.println("Aktuelle Position der Figuren:\n" + currentMap + "\n");
+
         } else if (choice.equals("NEW")) {
             movesMap = new LinkedHashMap<>();
+            currentMap = new LinkedHashMap<>(startPieces());
             String newGameJson = toJson(movesMap);
             Files.write(Paths.get("moves.json"), newGameJson.getBytes());
             System.out.println("Neues Spiel gestartet. Du bist am Zug.\n");
@@ -118,5 +130,44 @@ public class ChessPiecesJson {
         String move = scanner.next().toUpperCase().trim();
         scanner.nextLine();
         return move;
+    }
+    private static Map<String, String> startPieces() {
+        currentMap.put("WR1", "A1");
+        currentMap.put("WN1", "B1");
+        currentMap.put("WB1", "C1");
+        currentMap.put("WQ", "D1");
+        currentMap.put("WK", "E1");
+        currentMap.put("WB2", "F1");
+        currentMap.put("WN2", "G1");
+        currentMap.put("WR2", "H1");
+        currentMap.put("WP1", "A2");
+        currentMap.put("WP2", "B2");
+        currentMap.put("WP3", "C2");
+        currentMap.put("WP4", "D2");
+        currentMap.put("WP5", "E2");
+        currentMap.put("WP6", "F2");
+        currentMap.put("WP7", "G2");
+        currentMap.put("WP8", "H2");
+
+        currentMap.put("BP1", "A7");
+        currentMap.put("BP2", "B7");
+        currentMap.put("BP3", "C7");
+        currentMap.put("BP4", "D7");
+        currentMap.put("BP5", "E7");
+        currentMap.put("BP6", "F7");
+        currentMap.put("BP7", "G7");
+        currentMap.put("BP8", "H7");
+        currentMap.put("BR1", "A8");
+        currentMap.put("BN1", "B8");
+        currentMap.put("BB1", "C8");
+        currentMap.put("BQ", "D8");
+        currentMap.put("BK", "E8");
+        currentMap.put("BB2", "F8");
+        currentMap.put("BN2", "G8");
+        currentMap.put("BR2", "H8");
+
+        System.out.println("Startaufstellung der Figuren:\n" + currentMap + "\n");
+
+        return currentMap;
     }
 }
