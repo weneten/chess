@@ -3,24 +3,24 @@ import java.nio.file.*;
 import java.util.*;
 
 public class ChessPiecesJson {
-    
+
     static String turn = "WHITE";
     static int turnCounter;
     static Map<String, String> currentMap = new LinkedHashMap<>();
 
     public static void main(String[] args) throws Exception {
 
-        //### VARS ###
-        Map<String, String> movesMap;
+        // ### VARS ###
         JSONLoaderWriter jsonLoader = new JSONLoaderWriter();
+        GameLogic gameLogic = new GameLogic();
+        Map<String, String> movesMap;
         boolean gameRunning = true;
 
-        //User makes a Choice what to do
+        // User makes a Choice what to do
         String choice = makeChoice();
 
-        //Switch case?
+        // Switch case?
         if (choice.equals("LOAD")) {
-
 
             String loaded = Files.readString(Paths.get("moves.json"));
             movesMap = jsonLoader.parseJSON(loaded);
@@ -36,8 +36,8 @@ public class ChessPiecesJson {
             System.out.println("Spiel geladen. Du bist am Zug.\n");
 
             movesMap.forEach((k, v) -> {
-                String piece = v.substring(0, 3);
-                String field = v.substring(3, 5);
+                String piece = v.substring(0, v.length() - 2);
+                String field = v.length() >= 2 ? v.substring(v.length() - 2) : "";
                 currentMap.put(piece, field);
                 currentMap.values().removeIf(f -> f.equals(field) && !currentMap.get(piece).equals(field));
             });
@@ -45,7 +45,7 @@ public class ChessPiecesJson {
 
         } else if (choice.equals("NEW")) {
 
-            //make empty movesmap and save start positions of the pieces
+            // make empty movesmap and save start positions of the pieces
             movesMap = new LinkedHashMap<>();
             currentMap = new LinkedHashMap<>(startPieces());
 
@@ -62,7 +62,6 @@ public class ChessPiecesJson {
             return;
         }
 
-
         while (gameRunning) {
 
             String move = getUserMove();
@@ -73,11 +72,26 @@ public class ChessPiecesJson {
                 continue;
             }
 
-            movesMap.put(String.valueOf(turnCounter), move);
-            System.out.println("Zug " + turnCounter + ": " + move);
-            turnCounter++;
-            //save move to json
-            jsonLoader.writeToJSON(movesMap);
+            try {
+                String piece = move.substring(0, move.length() - 2);
+                String toField = move.length() >= 2 ? move.substring(move.length() - 2) : "";
+                // Prüfe die Validität des Zuges, bevor er gespeichert wird
+                movesMap.put(String.valueOf(turnCounter), move);
+                if (gameLogic.makeMove(piece, toField, currentMap)) {
+                    System.out.println("Zug " + turnCounter + ": " + move);
+                    turnCounter++;
+                    jsonLoader.writeToJSON(movesMap); // Speichern nach erfolgreicher Validierung
+                } else {
+                    System.out.println("Ungültiger Zug. Versuche es erneut.");
+                    movesMap.remove(String.valueOf(turnCounter)); // Ungültigen Zug entfernen
+                    continue;
+                }
+            } catch (Exception e) {
+                System.out.println("Ungültige Eingabe. Versuche es erneut.");
+                    movesMap.remove(String.valueOf(turnCounter)); // Ungültigen Zug entfernen
+                    continue;
+                }
+            
 
             if (turn.equals("WHITE")) {
                 turn = "BLACK";
@@ -88,7 +102,6 @@ public class ChessPiecesJson {
         }
 
     }
-
 
     private static String getUserMove() {
         Scanner scanner = new Scanner(System.in);
@@ -101,6 +114,7 @@ public class ChessPiecesJson {
         scanner.nextLine();
         return move;
     }
+
     private static Map<String, String> startPieces() {
         currentMap.put("WR1", "A1");
         currentMap.put("WN1", "B1");
@@ -141,7 +155,7 @@ public class ChessPiecesJson {
         return currentMap;
     }
 
-    private static String makeChoice (){
+    private static String makeChoice() {
 
         System.out.println("Möchtest du ein Spiel starten oder laden? (New/Load)\n" +
                 "Gib 'exit' ein, um das Programm zu beenden.\n");
