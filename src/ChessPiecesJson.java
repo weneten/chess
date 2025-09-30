@@ -1,4 +1,4 @@
-import java.io.*;
+import jsonIO.JSONLoaderWriter;
 import java.nio.file.*;
 import java.util.*;
 
@@ -10,17 +10,23 @@ public class ChessPiecesJson {
 
     public static void main(String[] args) throws Exception {
 
+        //### VARS ###
         Map<String, String> movesMap;
+        JSONLoaderWriter jsonLoader = new JSONLoaderWriter();
+        boolean gameRunning = true;
 
-        System.out.println("Möchtest du ein Spiel starten oder laden? (New/Load)\n" +
-                "Gib 'exit' ein, um das Programm zu beenden.\n");
-        Scanner scanner = new Scanner(System.in);
-        String choice = scanner.nextLine().toUpperCase().trim();
+        //User makes a Choice what to do
+        String choice = makeChoice();
 
+        //Switch case?
         if (choice.equals("LOAD")) {
+
+
             String loaded = Files.readString(Paths.get("moves.json"));
-            movesMap = parseSimpleJson(loaded);
+            movesMap = jsonLoader.parseJSON(loaded);
+
             currentMap = new LinkedHashMap<>(startPieces());
+
             if (movesMap.size() % 2 == 0) {
                 turn = "WHITE";
             } else {
@@ -38,11 +44,14 @@ public class ChessPiecesJson {
             System.out.println("Aktuelle Position der Figuren:\n" + currentMap + "\n");
 
         } else if (choice.equals("NEW")) {
+
+            //make empty movesmap and save start positions of the pieces
             movesMap = new LinkedHashMap<>();
             currentMap = new LinkedHashMap<>(startPieces());
-            String newGameJson = toJson(movesMap);
-            Files.write(Paths.get("moves.json"), newGameJson.getBytes());
+
+            jsonLoader.writeToJSON(movesMap);
             System.out.println("Neues Spiel gestartet. Du bist am Zug.\n");
+
             turnCounter = 1;
 
         } else if (choice.equals("EXIT")) {
@@ -53,7 +62,6 @@ public class ChessPiecesJson {
             return;
         }
 
-        boolean gameRunning = true;
 
         while (gameRunning) {
 
@@ -68,9 +76,8 @@ public class ChessPiecesJson {
             movesMap.put(String.valueOf(turnCounter), move);
             System.out.println("Zug " + turnCounter + ": " + move);
             turnCounter++;
-            String newJSON = toJson(movesMap);
-            Files.write(Paths.get("moves.json"), newJSON.getBytes());
-            System.out.println("Zug in moves.json gespeichert.\n");
+            //save move to json
+            jsonLoader.writeToJSON(movesMap);
 
             if (turn.equals("WHITE")) {
                 turn = "BLACK";
@@ -82,43 +89,6 @@ public class ChessPiecesJson {
 
     }
 
-    // simple JSON Serializer (nur Strings, keine Escapes)
-    private static String toJson(Map<String, String> map) {
-        StringBuilder sb = new StringBuilder("{");
-        Iterator<Map.Entry<String, String>> it = map.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry<String, String> e = it.next();
-            sb.append("\"").append(e.getKey()).append("\":");
-            sb.append("\"").append(e.getValue()).append("\"");
-            if (it.hasNext())
-                sb.append(",");
-        }
-        sb.append("}");
-        return sb.toString();
-    }
-
-    // simple JSON Deserializer (nur Strings, keine Escapes)
-    private static Map<String, String> parseSimpleJson(String json) {
-        Map<String, String> result = new LinkedHashMap<>();
-        json = json.trim();
-        if (json.startsWith("{"))
-            json = json.substring(1);
-        if (json.endsWith("}"))
-            json = json.substring(0, json.length() - 1);
-
-        if (json.isEmpty()) {
-            return result;
-        }
-
-        for (String part : json.split(",")) {
-            String[] kv = part.split(":", 2);
-            String key = kv[0].replace("\"", "").trim();
-            String value = kv[1].replace("\"", "").trim();
-            result.put(key, value);
-        }
-        return result;
-
-    }
 
     private static String getUserMove() {
         Scanner scanner = new Scanner(System.in);
@@ -169,5 +139,14 @@ public class ChessPiecesJson {
         System.out.println("Startaufstellung der Figuren:\n" + currentMap + "\n");
 
         return currentMap;
+    }
+
+    private static String makeChoice (){
+
+        System.out.println("Möchtest du ein Spiel starten oder laden? (New/Load)\n" +
+                "Gib 'exit' ein, um das Programm zu beenden.\n");
+        Scanner scanner = new Scanner(System.in);
+
+        return scanner.nextLine().toUpperCase().trim();
     }
 }
