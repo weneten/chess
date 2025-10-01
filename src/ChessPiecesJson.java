@@ -75,23 +75,20 @@ public class ChessPiecesJson {
             try {
                 String piece = move.substring(0, move.length() - 2);
                 String toField = move.length() >= 2 ? move.substring(move.length() - 2) : "";
-                // Prüfe die Validität des Zuges, bevor er gespeichert wird
-                movesMap.put(String.valueOf(turnCounter), move);
-                if (gameLogic.makeMove(piece, toField, currentMap)) {
+
+                if (gameLogic.makeMove(piece, toField, currentMap, movesMap)) { 
+                    movesMap.put(String.valueOf(turnCounter), move);
                     System.out.println("Zug " + turnCounter + ": " + move);
                     turnCounter++;
-                    jsonLoader.writeToJSON(movesMap); // Speichern nach erfolgreicher Validierung
+                    jsonLoader.writeToJSON(movesMap); // Speichern nach Validierung
                 } else {
                     System.out.println("Ungültiger Zug. Versuche es erneut.");
-                    movesMap.remove(String.valueOf(turnCounter)); // Ungültigen Zug entfernen
                     continue;
                 }
             } catch (Exception e) {
                 System.out.println("Ungültige Eingabe. Versuche es erneut.");
-                    movesMap.remove(String.valueOf(turnCounter)); // Ungültigen Zug entfernen
-                    continue;
-                }
-            
+                continue;
+            }
 
             if (turn.equals("WHITE")) {
                 turn = "BLACK";
