@@ -57,6 +57,7 @@ public class GameLogic {
                 System.out.println(pieceAtDestination + " geschlagen.");
                 currentMap.remove(pieceAtDestination);
             }
+            currentMap.put(piece, toField);
         }
 
         return isValidMove;
