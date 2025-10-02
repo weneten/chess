@@ -38,8 +38,14 @@ public class ChessPiecesJson {
             movesMap.forEach((k, v) -> {
                 String piece = v.substring(0, v.length() - 2);
                 String field = v.length() >= 2 ? v.substring(v.length() - 2) : "";
+
+                String pieceAtDestination = GameLogic.getKeyByValue(currentMap, field); // Check if capture
+                if (pieceAtDestination != null && !pieceAtDestination.equals(piece)) { // Avoid self-capture
+                    System.out.println("Beim Laden: " + pieceAtDestination + " von " + field + " entfernt (Capture).");
+                    currentMap.remove(pieceAtDestination);
+                }
+
                 currentMap.put(piece, field);
-                currentMap.values().removeIf(f -> f.equals(field) && !currentMap.get(piece).equals(field));
             });
             System.out.println("Aktuelle Position der Figuren:\n" + currentMap + "\n");
 
@@ -76,7 +82,7 @@ public class ChessPiecesJson {
                 String piece = move.substring(0, move.length() - 2);
                 String toField = move.length() >= 2 ? move.substring(move.length() - 2) : "";
 
-                if (gameLogic.makeMove(piece, toField, currentMap, movesMap)) { 
+                if (gameLogic.makeMove(piece, toField, currentMap, movesMap)) {
                     movesMap.put(String.valueOf(turnCounter), move);
                     System.out.println("Zug " + turnCounter + ": " + move);
                     turnCounter++;
