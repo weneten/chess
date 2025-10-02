@@ -119,42 +119,32 @@ public class ChessPiecesJson {
     }
 
     private static Map<String, String> startPieces() {
-        currentMap.put("WR1", "A1");
-        currentMap.put("WN1", "B1");
-        currentMap.put("WB1", "C1");
-        currentMap.put("WQ", "D1");
-        currentMap.put("WK", "E1");
-        currentMap.put("WB2", "F1");
-        currentMap.put("WN2", "G1");
-        currentMap.put("WR2", "H1");
-        currentMap.put("WP1", "A2");
-        currentMap.put("WP2", "B2");
-        currentMap.put("WP3", "C2");
-        currentMap.put("WP4", "D2");
-        currentMap.put("WP5", "E2");
-        currentMap.put("WP6", "F2");
-        currentMap.put("WP7", "G2");
-        currentMap.put("WP8", "H2");
+        
+        char[] files = "ABCDEFGH".toCharArray();
 
-        currentMap.put("BP1", "A7");
-        currentMap.put("BP2", "B7");
-        currentMap.put("BP3", "C7");
-        currentMap.put("BP4", "D7");
-        currentMap.put("BP5", "E7");
-        currentMap.put("BP6", "F7");
-        currentMap.put("BP7", "G7");
-        currentMap.put("BP8", "H7");
-        currentMap.put("BR1", "A8");
-        currentMap.put("BN1", "B8");
-        currentMap.put("BB1", "C8");
-        currentMap.put("BQ", "D8");
-        currentMap.put("BK", "E8");
-        currentMap.put("BB2", "F8");
-        currentMap.put("BN2", "G8");
-        currentMap.put("BR2", "H8");
+        // Weiße Figuren hinten
+        String[] whiteBack = { "WR1", "WN1", "WB1", "WQ", "WK", "WB2", "WN2", "WR2" };
+        for (int i = 0; i < files.length; i++) {
+            currentMap.put(whiteBack[i], files[i] + "1");
+        }
+
+        // Weiße Bauern
+        for (int i = 0; i < files.length; i++) {
+            currentMap.put("WP" + (i + 1), files[i] + "2");
+        }
+
+        // Schwarze Bauern
+        for (int i = 0; i < files.length; i++) {
+            currentMap.put("BP" + (i + 1), files[i] + "7");
+        }
+
+        // Schwarze Figuren hinten
+        String[] blackBack = { "BR1", "BN1", "BB1", "BQ", "BK", "BB2", "BN2", "BR2" };
+        for (int i = 0; i < files.length; i++) {
+            currentMap.put(blackBack[i], files[i] + "8");
+        }
 
         System.out.println("Startaufstellung der Figuren:\n" + currentMap + "\n");
-
         return currentMap;
     }
 
