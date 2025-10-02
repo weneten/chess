@@ -12,6 +12,11 @@ public class GameLogic {
 
         String pieceAtDestination = getKeyByValue(currentMap, toField);
 
+        // early return if same color piece at destination
+        if (pieceAtDestination != null && piece.charAt(0) == pieceAtDestination.charAt(0)) {
+            return false;
+        }
+
         if (piece.startsWith("WP")) { // white pawn
             boolean hasPawnMoved = pawnHasMoved(piece, movesMap);
 
@@ -46,8 +51,12 @@ public class GameLogic {
 
         // TODO add other pieces
 
-        if (isValidMove) { // check if there is a piece at the destination
-            isValidMove = checkDestination(piece, pieceAtDestination, currentMap);
+        if (isValidMove) {
+            // If capture, remove the piece (empty targets need no action)
+            if (pieceAtDestination != null) {
+                System.out.println(pieceAtDestination + " geschlagen.");
+                currentMap.remove(pieceAtDestination);
+            }
         }
 
         return isValidMove;
@@ -84,23 +93,4 @@ public class GameLogic {
         }
         return false; // Kein Move gefunden -> noch nicht bewegt
     }
-
-    private boolean checkDestination(String piece, String pieceAtDestination, Map<String, String> currentMap) {
-        if (pieceAtDestination != null) {
-            // Different color → capture
-            if (piece.charAt(0) != pieceAtDestination.charAt(0)) {
-                System.out.println(pieceAtDestination + " geschlagen.");
-                currentMap.remove(pieceAtDestination);
-                return true;
-            } else {
-                // Same color → move invalid
-                return false;
-            }
-        } else {
-            // No piece at the destination → move valid
-            System.out.println("Keine Figur am Zielort.");
-            return true;
-        }
-    }
-
 }
