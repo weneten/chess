@@ -46,18 +46,8 @@ public class GameLogic {
 
         // TODO add other pieces
 
-        if (isValidMove) {
-            if (pieceAtDestination != null) { // there is a piece at the destination
-                if (piece.charAt(0) != pieceAtDestination.charAt(0)) { // different color pieces
-                    System.out.println(pieceAtDestination + " geschlagen.");
-                    currentMap.remove(pieceAtDestination);
-                } else { // same color piece at destination
-                    isValidMove = false;
-                }
-            } else {
-                // no piece at the destination
-                System.out.println("Keine Figur am Zielort.");
-            }
+        if (isValidMove) { // check if there is a piece at the destination
+            isValidMove = checkDestination(piece, pieceAtDestination, currentMap);
         }
 
         return isValidMove;
@@ -93,6 +83,24 @@ public class GameLogic {
             }
         }
         return false; // Kein Move gefunden -> noch nicht bewegt
+    }
+
+    private boolean checkDestination(String piece, String pieceAtDestination, Map<String, String> currentMap) {
+        if (pieceAtDestination != null) {
+            // Different color → capture
+            if (piece.charAt(0) != pieceAtDestination.charAt(0)) {
+                System.out.println(pieceAtDestination + " geschlagen.");
+                currentMap.remove(pieceAtDestination);
+                return true;
+            } else {
+                // Same color → move invalid
+                return false;
+            }
+        } else {
+            // No piece at the destination → move valid
+            System.out.println("Keine Figur am Zielort.");
+            return true;
+        }
     }
 
 }
