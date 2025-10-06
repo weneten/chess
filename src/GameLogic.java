@@ -7,6 +7,7 @@ public class GameLogic {
         // TODO game Logic for moving pieces
 
         boolean isValidMove = false;
+        String capturedPiece = null;
 
         // is valid move?
 
@@ -24,6 +25,9 @@ public class GameLogic {
                 // only diagonal capture allowed
                 isValidMove = toField.equals(move(currentMap.get(piece), 1, 1)) ||
                         toField.equals(move(currentMap.get(piece), 1, -1));
+                if (isValidMove) {
+                    capturedPiece = pieceAtDestination; // capture
+                }
             } else {
                 // normal move forward
                 isValidMove = toField.equals(move(currentMap.get(piece), 1, 0));
@@ -39,6 +43,9 @@ public class GameLogic {
                 // only diagonal capture allowed
                 isValidMove = toField.equals(move(currentMap.get(piece), -1, 1)) ||
                         toField.equals(move(currentMap.get(piece), -1, -1));
+                if (isValidMove) {
+                    capturedPiece = pieceAtDestination; // capture
+                }
             } else {
                 // normal move forward)
                 isValidMove = toField.equals(move(currentMap.get(piece), -1, 0));
@@ -49,13 +56,28 @@ public class GameLogic {
             }
         }
 
+        // Check for en passant
+        if (!isValidMove && enPassantPossible(piece, toField, currentMap, movesMap)) {
+            isValidMove = true;
+            if (movesMap.isEmpty()) {
+                // safety check, should not happen as enPassantPossible would return false
+            } else {
+                String lastMove = null;
+                for (String move : movesMap.values()) {
+                    lastMove = move; // Letztes Move holen
+                }
+                if (lastMove != null && lastMove.length() >= 4) {
+                    capturedPiece = lastMove.substring(0, 3); // z.B. "BP1" als capturedPiece
+                }
+            }
+        }
         // TODO add other pieces
 
         if (isValidMove) {
             // If capture, remove the piece (empty targets need no action)
-            if (pieceAtDestination != null) {
-                System.out.println(pieceAtDestination + " geschlagen.");
-                currentMap.remove(pieceAtDestination);
+            if (capturedPiece != null) {
+                System.out.println(capturedPiece + " geschlagen.");
+                currentMap.remove(capturedPiece);
             }
             currentMap.put(piece, toField);
         }
@@ -93,5 +115,71 @@ public class GameLogic {
             }
         }
         return false; // Kein Move gefunden -> noch nicht bewegt
+    }
+
+    private boolean enPassantPossible(String pawn, String toField, Map<String, String> currentMap,
+            Map<String, String> movesMap) {
+        if (movesMap.isEmpty()) {
+            return false; // No moves made yet
+        }
+
+        String lastMove = null;
+
+        for (String move : movesMap.values()) {
+            lastMove = move; // Get the last move
+        }
+
+        if (lastMove == null || lastMove.length() < 4)
+            return false;
+
+        String lastPiece = lastMove.substring(0, 3); // e.g. "WP1"
+        String lastToField = lastMove.substring(3); // e.g. "A4"
+
+        if (!(lastPiece.startsWith("WP") || lastPiece.startsWith("BP"))) {
+            return false;
+        }
+
+        char lastCol = lastToField.charAt(0);
+        char lastRow = lastToField.charAt(1);
+
+        boolean twoStepMove = false;
+        if (lastPiece.startsWith("WP") && lastRow == '4') {
+            twoStepMove = true; // white pawn moved 2 squares (2 -> 4)
+        } else if (lastPiece.startsWith("BP") && lastRow == '5') {
+            twoStepMove = true; // black pawn moved 2 squares (7 -> 5)
+        }
+
+        if (!twoStepMove)
+            return false;
+
+        String myPos = currentMap.get(pawn);
+
+        if (myPos == null) {
+            return false; // Pawn not found on the board
+        }
+
+        char myCol = myPos.charAt(0);
+        char myRow = myPos.charAt(1);
+
+        boolean adjacentFile = Math.abs(myCol - lastCol) == 1; // Check if pawns are on adjacent files
+        if (!adjacentFile)
+            return false;
+
+        // Must be on the same row as the pawn that just moved e.g 5
+        if (myRow != lastRow)
+            return false;
+
+        // Now check if our move (toField) matches the en passant capture square
+        if (pawn.startsWith("WP")) {
+            // White captures upwards
+            String targetSquare = "" + lastCol + (char) (lastRow + 1);
+            return toField.equals(targetSquare);
+        } else if (pawn.startsWith("BP")) {
+            // Black captures downwards
+            String targetSquare = "" + lastCol + (char) (lastRow - 1);
+            return toField.equals(targetSquare);
+        }
+
+        return false;
     }
 }

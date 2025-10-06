@@ -118,7 +118,7 @@ public class ChessPiecesJson {
         return move;
     }
 
-    private static Map<String, String> startPieces() {
+    private static Map<String, String> startPieces() { // refactored just for Bothe
         
         char[] files = "ABCDEFGH".toCharArray();
 
