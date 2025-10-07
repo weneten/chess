@@ -4,7 +4,7 @@ import java.util.Map;
 public class GameLogic {
 
     public boolean makeMove(String piece, String toField, Map<String, String> currentMap,
-            Map<String, String> movesMap) {
+            Map<String, String> movesMap, String turn) {
         // TODO game Logic for moving pieces
 
         boolean isValidMove = false;
@@ -12,6 +12,12 @@ public class GameLogic {
 
         // is valid move?
         String pieceAtDestination = getKeyByValue(currentMap, toField);
+
+        if (turn.equals("WHITE") && piece.contains("B")) { // return false if wrong color
+            return false;
+        } else if (turn.equals("BLACK") && piece.contains("W")) {
+            return false;
+        }
 
         // early return if same color piece at destination
         if (pieceAtDestination != null && piece.charAt(0) == pieceAtDestination.charAt(0)) {
@@ -37,7 +43,7 @@ public class GameLogic {
                     }
                 }
             }
-        } else if (piece.startsWith("BP")) { // black pawn
+        } else if (piece.startsWith("BP") ) { // black pawn
             boolean hasPawnMoved = pawnHasMoved(piece, movesMap);
 
             if (pieceAtDestination != null) { // only diagonal capture allowed

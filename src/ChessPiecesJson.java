@@ -1,6 +1,6 @@
-import jsonIO.JSONLoaderWriter;
 import java.nio.file.*;
 import java.util.*;
+import jsonIO.JSONLoaderWriter;
 
 public class ChessPiecesJson {
 
@@ -82,7 +82,7 @@ public class ChessPiecesJson {
                 String piece = move.substring(0, move.length() - 2);
                 String toField = move.length() >= 2 ? move.substring(move.length() - 2) : "";
 
-                if (gameLogic.makeMove(piece, toField, currentMap, movesMap)) {
+                if (gameLogic.makeMove(piece, toField, currentMap, movesMap, turn)) {
                     movesMap.put(String.valueOf(turnCounter), move);
                     System.out.println("Zug " + turnCounter + ": " + move);
                     turnCounter++;
