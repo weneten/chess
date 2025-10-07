@@ -21,40 +21,42 @@ public class GameLogic {
         if (piece.startsWith("WP")) { // white pawn
             boolean hasPawnMoved = pawnHasMoved(piece, movesMap);
 
-            if (pieceAtDestination != null) {
-                // only diagonal capture allowed
+            if (pieceAtDestination != null) { // only diagonal capture allowed
                 isValidMove = toField.equals(move(currentMap.get(piece), 1, 1)) ||
                         toField.equals(move(currentMap.get(piece), 1, -1));
                 if (isValidMove) {
                     capturedPiece = pieceAtDestination; // capture
                 }
-            } else {
-                // normal move forward
+            } else { // normal move forward
                 isValidMove = toField.equals(move(currentMap.get(piece), 1, 0));
-                if (!hasPawnMoved) {
-                    // first move can be 2 fields
-                    isValidMove = isValidMove || toField.equals(move(currentMap.get(piece), 2, 0));
+                if (!hasPawnMoved) { // first move can be 2 fields
+                    int[][] directions = {{0, 1}};
+
+                    if (checkPathClear(currentMap.get(piece), toField, directions, currentMap)) {
+                        isValidMove = isValidMove || toField.equals(move(currentMap.get(piece), 2, 0));
+                    }
                 }
             }
         } else if (piece.startsWith("BP")) { // black pawn
             boolean hasPawnMoved = pawnHasMoved(piece, movesMap);
 
-            if (pieceAtDestination != null) {
-                // only diagonal capture allowed
+            if (pieceAtDestination != null) { // only diagonal capture allowed
                 isValidMove = toField.equals(move(currentMap.get(piece), -1, 1)) ||
                         toField.equals(move(currentMap.get(piece), -1, -1));
                 if (isValidMove) {
                     capturedPiece = pieceAtDestination; // capture
                 }
-            } else {
-                // normal move forward)
+            } else { // normal move forward
                 isValidMove = toField.equals(move(currentMap.get(piece), -1, 0));
-                if (!hasPawnMoved) {
-                    // first move can be 2 fields
-                    isValidMove = isValidMove || toField.equals(move(currentMap.get(piece), -2, 0));
+                if (!hasPawnMoved) { // first move can be 2 fields
+                    int[][] directions = {{0, -1}};
+
+                    if (checkPathClear(currentMap.get(piece), toField, directions, currentMap)) {
+                        isValidMove = isValidMove || toField.equals(move(currentMap.get(piece), -2, 0));
+                    }
                 }
             }
-        } else if (piece.contains("R")) { //Rook
+        } else if (piece.contains("R")) { // Rook
             String fromField = currentMap.get(piece);
             if (fromField != null) {
                 char fromCol = fromField.charAt(0);
@@ -204,7 +206,7 @@ public class GameLogic {
     }
     
     private boolean checkPathClear(String fromField, String toField, int[][] directions, Map<String, String> currentMap) {
-        // Check if the path is clear for Rook, Bishop, Queen
+        // Check if the path is clear for Pawn, Rook, Bishop, Queen
         char fromCol = fromField.charAt(0);
         char fromRow = fromField.charAt(1);
         char toCol = toField.charAt(0);
