@@ -16,3 +16,10 @@
 
 - [x] Rooks can move any number of squares horizontally or vertically (left, right, up, down) as long as the path is clear
 - [X] Rooks can capture an opponent's piece by moving to its square, but only if the path to that square is empty
+
+
+### Knight logic
+
+- [ ] can jump over pieces
+- [ ] can move in an "L" shape (e.g. 2 forward and 1 left)
+- [ ] Knights can capture an opponent's piece by moving to its square
