@@ -4,7 +4,7 @@
 
 - [x] can move 1-2 Forward (if first move in game), else it can move 1 forward if forward square is empty
 - [x] Pawns can never move backwards
-- [x] if there is a piece diagonally (1 forward and one sideways) the Pawn is able to capture the opponents piece 
+- [x] if there is a piece diagonally (1 forward and 1 sideways) the Pawn is able to capture the opponents piece 
 - [x] en passent
     - if a Pawn moves 2 forward and lands next to an opponent's Pawn, the opponent's Pawn can capture it as if the Pawn had only moved 1 forward (must capture immediately on the next move)
 - [x] Pawns can not jump over a piece when moving 2 steps forward
