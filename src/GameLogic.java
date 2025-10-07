@@ -102,9 +102,27 @@ public class GameLogic {
                 }
                 isValidMove = true; // Valid queen move
             }
+        } else if (piece.contains("K")) { // King
+            String fromField = currentMap.get(piece);
+            if (fromField != null) {
+                char fromCol = fromField.charAt(0);
+                char fromRow = fromField.charAt(1);
+                char toCol = toField.charAt(0);
+                char toRow = toField.charAt(1);
+
+                int colDiff = Math.abs(toCol - fromCol);
+                int rowDiff = Math.abs(toRow - fromRow);
+
+                // King can move one square in any direction
+                if (colDiff <= 1 && rowDiff <= 1 && (colDiff + rowDiff > 0)) {
+                    if (pieceAtDestination != null) {
+                        capturedPiece = pieceAtDestination; // capture
+                    }
+                    isValidMove = true; // Valid king move
+                }
+            }
         }
 
-        // TODO add other pieces
         // Check for en passant
         if (!isValidMove && enPassantPossible(piece, toField, currentMap, movesMap)) {
             isValidMove = true;
@@ -319,7 +337,7 @@ public class GameLogic {
             col += dCol;
             row += dRow;
         }
-        
+
         return true;
     }
 }

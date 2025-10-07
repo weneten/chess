@@ -32,8 +32,8 @@
 
 ### King
 
-- [ ] Kings can move one square in any direction (horizontally, vertically, or diagonally) as long as the destination square is not under attack by an opponent's piece
-- [ ] Kings can capture an opponent's piece by moving to its square, but only if that square is not protected by another opponent's piece
+- [x] Kings can move one square in any direction (horizontally, vertically, or diagonally) as long as the destination square is not under attack by an opponent's piece
+- [x] Kings can capture an opponent's piece by moving to its square, but only if that square is not protected by another opponent's piece
 
 ### Special Rules
 
