@@ -1,3 +1,4 @@
+
 import java.util.Map;
 
 public class GameLogic {
@@ -10,7 +11,6 @@ public class GameLogic {
         String capturedPiece = null;
 
         // is valid move?
-
         String pieceAtDestination = getKeyByValue(currentMap, toField);
 
         // early return if same color piece at destination
@@ -22,8 +22,8 @@ public class GameLogic {
             boolean hasPawnMoved = pawnHasMoved(piece, movesMap);
 
             if (pieceAtDestination != null) { // only diagonal capture allowed
-                isValidMove = toField.equals(move(currentMap.get(piece), 1, 1)) ||
-                        toField.equals(move(currentMap.get(piece), 1, -1));
+                isValidMove = toField.equals(move(currentMap.get(piece), 1, 1))
+                        || toField.equals(move(currentMap.get(piece), 1, -1));
                 if (isValidMove) {
                     capturedPiece = pieceAtDestination; // capture
                 }
@@ -41,8 +41,8 @@ public class GameLogic {
             boolean hasPawnMoved = pawnHasMoved(piece, movesMap);
 
             if (pieceAtDestination != null) { // only diagonal capture allowed
-                isValidMove = toField.equals(move(currentMap.get(piece), -1, 1)) ||
-                        toField.equals(move(currentMap.get(piece), -1, -1));
+                isValidMove = toField.equals(move(currentMap.get(piece), -1, 1))
+                        || toField.equals(move(currentMap.get(piece), -1, -1));
                 if (isValidMove) {
                     capturedPiece = pieceAtDestination; // capture
                 }
@@ -119,10 +119,40 @@ public class GameLogic {
                     }
                 }
             }
+        } else if (piece.contains("Q")) { // Queen
+            String fromField = currentMap.get(piece);
+            if (fromField != null) {
+                char fromCol = fromField.charAt(0);
+                char fromRow = fromField.charAt(1);
+                char toCol = toField.charAt(0);
+                char toRow = toField.charAt(1);
+
+                int colDiff = Math.abs(toCol - fromCol);
+                int rowDiff = Math.abs(toRow - fromRow);
+
+                if (colDiff == rowDiff) { // Check for diagonal move: colDiff must equal rowDiff
+                    int[][] diagonalDirections = {{1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
+
+                    if (checkPathClear(fromField, toField, diagonalDirections, currentMap)) {
+                        if (pieceAtDestination != null) {
+                            capturedPiece = pieceAtDestination; //capture
+                        }
+                        isValidMove = true; // Valid Queen move (diagonally)
+                    }
+                } else if (fromCol == toCol || fromRow == toRow) { // Check if moving in a straight line (same row or same column)
+                    int[][] rookDirections = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+
+                    if (checkPathClear(fromField, toField, rookDirections, currentMap)) {
+                        if(pieceAtDestination != null) {
+                            capturedPiece = pieceAtDestination;
+                        }
+                        isValidMove = true; // Valid Queen move (horizontally)
+                    }
+                }
+            }
         }
 
         // TODO add other pieces
-        
         // Check for en passant
         if (!isValidMove && enPassantPossible(piece, toField, currentMap, movesMap)) {
             isValidMove = true;
@@ -194,8 +224,9 @@ public class GameLogic {
             lastMove = move; // Get the last move
         }
 
-        if (lastMove == null || lastMove.length() < 4)
+        if (lastMove == null || lastMove.length() < 4) {
             return false;
+        }
 
         String lastPiece = lastMove.substring(0, 3); // e.g. "WP1"
         String lastToField = lastMove.substring(3); // e.g. "A4"
@@ -214,8 +245,9 @@ public class GameLogic {
             twoStepMove = true; // black pawn moved 2 squares (7 -> 5)
         }
 
-        if (!twoStepMove)
+        if (!twoStepMove) {
             return false;
+        }
 
         String myPos = currentMap.get(pawn);
 
@@ -227,12 +259,14 @@ public class GameLogic {
         char myRow = myPos.charAt(1);
 
         boolean adjacentFile = Math.abs(myCol - lastCol) == 1; // Check if pawns are on adjacent files
-        if (!adjacentFile)
+        if (!adjacentFile) {
             return false;
+        }
 
         // Must be on the same row as the pawn that just moved e.g 5
-        if (myRow != lastRow)
+        if (myRow != lastRow) {
             return false;
+        }
 
         // Now check if our move (toField) matches the en passant capture square
         if (pawn.startsWith("WP")) {
@@ -247,7 +281,7 @@ public class GameLogic {
 
         return false;
     }
-    
+
     private boolean checkPathClear(String fromField, String toField, int[][] directions, Map<String, String> currentMap) {
         // Check if the path is clear for Pawn, Rook, Bishop, Queen
         char fromCol = fromField.charAt(0);
