@@ -43,7 +43,7 @@ public class GameLogic {
                     }
                 }
             }
-        } else if (piece.startsWith("BP") ) { // black pawn
+        } else if (piece.startsWith("BP")) { // black pawn
             boolean hasPawnMoved = pawnHasMoved(piece, movesMap);
 
             if (pieceAtDestination != null) { // only diagonal capture allowed
@@ -63,24 +63,11 @@ public class GameLogic {
                 }
             }
         } else if (piece.contains("R")) { // Rook
-            String fromField = currentMap.get(piece);
-            if (fromField != null) {
-                char fromCol = fromField.charAt(0);
-                char fromRow = fromField.charAt(1);
-                char toCol = toField.charAt(0);
-                char toRow = toField.charAt(1);
-
-                // Check if moving in a straight line (same row or same column)
-                if (fromCol == toCol || fromRow == toRow) {
-                    int[][] rookDirections = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
-
-                    if (checkPathClear(fromField, toField, rookDirections, currentMap)) {
-                        if (pieceAtDestination != null) {
-                            capturedPiece = pieceAtDestination; // capture
-                        }
-                        isValidMove = true; // Valid rook move
-                    }
+            if (straightLineMove(piece, toField, currentMap)) {
+                if (pieceAtDestination != null) {
+                    capturedPiece = pieceAtDestination; // capture
                 }
+                isValidMove = true; // Valid rook move
             }
         } else if (piece.contains("N")) { // Knight
             String fromField = currentMap.get(piece);
@@ -101,60 +88,19 @@ public class GameLogic {
                     isValidMove = true; // Valid knight move
                 }
             }
-
         } else if (piece.contains("B")) { // Bishop
-            String fromField = currentMap.get(piece);
-            if (fromField != null) {
-                char fromCol = fromField.charAt(0);
-                char fromRow = fromField.charAt(1);
-                char toCol = toField.charAt(0);
-                char toRow = toField.charAt(1);
-
-                int colDiff = Math.abs(toCol - fromCol);
-                int rowDiff = Math.abs(toRow - fromRow);
-
-                // Check for diagonal move: colDiff must equal rowDiff
-                if (colDiff == rowDiff) {
-                    int[][] bishopDirections = {{1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
-
-                    if (checkPathClear(fromField, toField, bishopDirections, currentMap)) {
-                        if (pieceAtDestination != null) {
-                            capturedPiece = pieceAtDestination; // capture
-                        }
-                        isValidMove = true; // Valid bishop move
-                    }
+            if (diagonalLineMove(piece, toField, currentMap)) {
+                if (pieceAtDestination != null) {
+                    capturedPiece = pieceAtDestination; // capture
                 }
+                isValidMove = true; // Valid bishop move
             }
-        } else if (piece.contains("Q")) { // Queen
-            String fromField = currentMap.get(piece);
-            if (fromField != null) {
-                char fromCol = fromField.charAt(0);
-                char fromRow = fromField.charAt(1);
-                char toCol = toField.charAt(0);
-                char toRow = toField.charAt(1);
-
-                int colDiff = Math.abs(toCol - fromCol);
-                int rowDiff = Math.abs(toRow - fromRow);
-
-                if (colDiff == rowDiff) { // Check for diagonal move: colDiff must equal rowDiff
-                    int[][] diagonalDirections = {{1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
-
-                    if (checkPathClear(fromField, toField, diagonalDirections, currentMap)) {
-                        if (pieceAtDestination != null) {
-                            capturedPiece = pieceAtDestination; //capture
-                        }
-                        isValidMove = true; // Valid Queen move (diagonally)
-                    }
-                } else if (fromCol == toCol || fromRow == toRow) { // Check if moving in a straight line (same row or same column)
-                    int[][] rookDirections = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
-
-                    if (checkPathClear(fromField, toField, rookDirections, currentMap)) {
-                        if(pieceAtDestination != null) {
-                            capturedPiece = pieceAtDestination;
-                        }
-                        isValidMove = true; // Valid Queen move (horizontally)
-                    }
+        } else if (piece.contains("Q")) {
+            if (straightLineMove(piece, toField, currentMap) || diagonalLineMove(piece, toField, currentMap)) {
+                if (pieceAtDestination != null) {
+                    capturedPiece = pieceAtDestination; // capture
                 }
+                isValidMove = true; // Valid queen move
             }
         }
 
@@ -182,9 +128,7 @@ public class GameLogic {
             }
             currentMap.put(piece, toField);
         }
-
         return isValidMove;
-
     }
 
     private String move(String field, int rowDelta, int colDelta) {
@@ -288,6 +232,52 @@ public class GameLogic {
         return false;
     }
 
+    private boolean straightLineMove(String piece, String toField, Map<String, String> currentMap) {
+        String fromField = currentMap.get(piece);
+        if (fromField == null) {
+            return false; // Piece not found on the board
+        }
+        char fromCol = fromField.charAt(0);
+        char fromRow = fromField.charAt(1);
+        char toCol = toField.charAt(0);
+        char toRow = toField.charAt(1);
+
+        // Check if moving in a straight line (same row or same column)
+        if (fromCol == toCol || fromRow == toRow) {
+            int[][] directions = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+
+            if (checkPathClear(fromField, toField, directions, currentMap)) {
+                return true; // Valid straight line move
+            }
+        }
+        return false; // Not a straight line move
+    }
+
+    private boolean diagonalLineMove(String piece, String toField, Map<String, String> currentMap) {
+        String fromField = currentMap.get(piece);
+        if (fromField == null) {
+            return false;
+        }
+
+        char fromCol = fromField.charAt(0);
+        char fromRow = fromField.charAt(1);
+        char toCol = toField.charAt(0);
+        char toRow = toField.charAt(1);
+
+        int colDiff = Math.abs(toCol - fromCol);
+        int rowDiff = Math.abs(toRow - fromRow);
+
+        // Check for diagonal move: colDiff must equal rowDiff
+        if (colDiff == rowDiff && colDiff > 0) {
+            int[][] diagonalDirections = {{1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
+
+            if (checkPathClear(fromField, toField, diagonalDirections, currentMap)) {
+                return true; // Valid diagonal move
+            }
+        }
+        return false; // Not a diagonal move
+    }
+
     private boolean checkPathClear(String fromField, String toField, int[][] directions, Map<String, String> currentMap) {
         // Check if the path is clear for Pawn, Rook, Bishop, Queen
         char fromCol = fromField.charAt(0);
@@ -317,6 +307,9 @@ public class GameLogic {
         int row = fromRow + dRow;
 
         while (col != toCol || row != toRow) { // Move step by step
+            if (col < 'A' || col > 'H' || row < '1' || row > '8') {
+                return false; // Out of board
+            }
             String square = "" + (char) col + (char) row;
 
             if (currentMap.containsValue(square)) {
@@ -326,11 +319,7 @@ public class GameLogic {
             col += dCol;
             row += dRow;
         }
-
-        if (col < 'A' || col > 'H' || row < '1' || row > '8') {
-            return false; // Out of board
-        }
-
+        
         return true;
     }
 }
