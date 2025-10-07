@@ -76,6 +76,26 @@ public class GameLogic {
                     }
                 }
             }
+        } else if (piece.contains("N")) { // Knight
+            String fromField = currentMap.get(piece);
+            if (fromField != null) {
+                char fromCol = fromField.charAt(0);
+                char fromRow = fromField.charAt(1);
+                char toCol = toField.charAt(0);
+                char toRow = toField.charAt(1);
+
+                int colDiff = Math.abs(toCol - fromCol);
+                int rowDiff = Math.abs(toRow - fromRow);
+
+                // Check for "L" shape move: 2 in one direction and 1 in the other
+                if ((colDiff == 2 && rowDiff == 1) || (colDiff == 1 && rowDiff == 2)) {
+                    if (pieceAtDestination != null) {
+                        capturedPiece = pieceAtDestination; // capture
+                    }
+                    isValidMove = true; // Valid knight move
+                }
+            }
+
         }
         
         // Check for en passant

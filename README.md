@@ -20,6 +20,6 @@
 
 ### Knight logic
 
-- [ ] can jump over pieces
-- [ ] can move in an "L" shape (e.g. 2 forward and 1 left)
-- [ ] Knights can capture an opponent's piece by moving to its square
+- [x] can jump over pieces
+- [x] can move in an "L" shape (e.g. 2 forward and 1 left)
+- [x] Knights can capture an opponent's piece by moving to its square
