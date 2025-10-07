@@ -204,20 +204,20 @@ public class GameLogic {
     }
     
     private boolean checkPathClear(String fromField, String toField, int[][] directions, Map<String, String> currentMap) {
-        // Check if the path is clear for Pawn, Rook, Bishop, Queen
+        // Check if the path is clear for Rook, Bishop, Queen
         char fromCol = fromField.charAt(0);
         char fromRow = fromField.charAt(1);
         char toCol = toField.charAt(0);
         char toRow = toField.charAt(1);
 
-        int colDiff = toCol - fromCol;
-        int rowDiff = toRow - fromRow;
+        int colDiff = toCol - fromCol; // e.g. Rook A4 to A7 -> 0
+        int rowDiff = toRow - fromRow; // e.g. Rook A4 to A7 -> 3
 
         int dCol = Integer.signum(colDiff); // -1 , 0 , 1
         int dRow = Integer.signum(rowDiff); // -1 , 0 , 1
 
         boolean validDirection = false;
-        for (int[] dir : directions) {
+        for (int[] dir : directions) { // Check if direction is valid
             if (dir[0] == dCol && dir[1] == dRow) {
                 validDirection = true;
                 break;
@@ -231,7 +231,7 @@ public class GameLogic {
         int col = fromCol + dCol;
         int row = fromRow + dRow;
 
-        while (col != toCol || row != toRow) {
+        while (col != toCol || row != toRow) { // Move step by step
             String square = "" + (char) col + (char) row;
 
             if (currentMap.containsValue(square)) {
