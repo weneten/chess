@@ -29,3 +29,8 @@
 
 - [x] Bishops can move any number of squares diagonally as long as the path is clear
 - [x] Bishops can capture an opponent's piece by moving to its square, but only if the path to that square is empty
+
+### Queen
+
+- [ ] Queens can move any number of squares horizontally, vertically, or diagonally (like a Rook and Bishop combined) as long as the path is clear
+- [ ] Queens can capture an opponent's piece by moving to its square, but only if the path to that square is empty
