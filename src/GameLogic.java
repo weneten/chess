@@ -96,7 +96,32 @@ public class GameLogic {
                 }
             }
 
+        } else if (piece.contains("B")) { // Bishop
+            String fromField = currentMap.get(piece);
+            if (fromField != null) {
+                char fromCol = fromField.charAt(0);
+                char fromRow = fromField.charAt(1);
+                char toCol = toField.charAt(0);
+                char toRow = toField.charAt(1);
+
+                int colDiff = Math.abs(toCol - fromCol);
+                int rowDiff = Math.abs(toRow - fromRow);
+
+                // Check for diagonal move: colDiff must equal rowDiff
+                if (colDiff == rowDiff) {
+                    int[][] bishopDirections = {{1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
+
+                    if (checkPathClear(fromField, toField, bishopDirections, currentMap)) {
+                        if (pieceAtDestination != null) {
+                            capturedPiece = pieceAtDestination; // capture
+                        }
+                        isValidMove = true; // Valid bishop move
+                    }
+                }
+            }
         }
+
+        // TODO add other pieces
         
         // Check for en passant
         if (!isValidMove && enPassantPossible(piece, toField, currentMap, movesMap)) {
@@ -109,14 +134,12 @@ public class GameLogic {
                     lastMove = move; // Letztes Move holen
                 }
                 if (lastMove != null && lastMove.length() >= 4) {
-                    capturedPiece = lastMove.substring(0, 3); // z.B. "BP1" als capturedPiece
+                    capturedPiece = lastMove.substring(0, 3); // e.g. "WP1"
                 }
             }
         }
-        // TODO add other pieces
 
-        if (isValidMove) {
-            // If capture, remove the piece (empty targets need no action)
+        if (isValidMove) { // If capture, remove the piece (empty targets need no action)
             if (capturedPiece != null) {
                 System.out.println(capturedPiece + " geschlagen.");
                 currentMap.remove(capturedPiece);

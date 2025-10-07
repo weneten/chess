@@ -25,5 +25,5 @@
 
 ### Bishop logic
 
-- [ ] Bishops can move any number of squares diagonally as long as the path is clear
-- [ ] Bishops can capture an opponent's piece by moving to its square, but only if the path to that square is empty
+- [x] Bishops can move any number of squares diagonally as long as the path is clear
+- [x] Bishops can capture an opponent's piece by moving to its square, but only if the path to that square is empty
