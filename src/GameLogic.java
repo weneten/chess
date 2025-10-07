@@ -54,8 +54,28 @@ public class GameLogic {
                     isValidMove = isValidMove || toField.equals(move(currentMap.get(piece), -2, 0));
                 }
             }
-        }
+        } else if (piece.contains("R")) { //Rook
+            String fromField = currentMap.get(piece);
+            if (fromField != null) {
+                char fromCol = fromField.charAt(0);
+                char fromRow = fromField.charAt(1);
+                char toCol = toField.charAt(0);
+                char toRow = toField.charAt(1);
 
+                // Check if moving in a straight line (same row or same column)
+                if (fromCol == toCol || fromRow == toRow) {
+                    int[][] rookDirections = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+
+                    if (checkPathClear(fromField, toField, rookDirections, currentMap)) {
+                        if (pieceAtDestination != null) {
+                            capturedPiece = pieceAtDestination; // capture
+                        }
+                        isValidMove = true; // Valid rook move
+                    }
+                }
+            }
+        }
+        
         // Check for en passant
         if (!isValidMove && enPassantPossible(piece, toField, currentMap, movesMap)) {
             isValidMove = true;
@@ -181,5 +201,51 @@ public class GameLogic {
         }
 
         return false;
+    }
+    
+    private boolean checkPathClear(String fromField, String toField, int[][] directions, Map<String, String> currentMap) {
+        // Check if the path is clear for Pawn, Rook, Bishop, Queen
+        char fromCol = fromField.charAt(0);
+        char fromRow = fromField.charAt(1);
+        char toCol = toField.charAt(0);
+        char toRow = toField.charAt(1);
+
+        int colDiff = toCol - fromCol;
+        int rowDiff = toRow - fromRow;
+
+        int dCol = Integer.signum(colDiff); // -1 , 0 , 1
+        int dRow = Integer.signum(rowDiff); // -1 , 0 , 1
+
+        boolean validDirection = false;
+        for (int[] dir : directions) {
+            if (dir[0] == dCol && dir[1] == dRow) {
+                validDirection = true;
+                break;
+            }
+        }
+
+        if (!validDirection) {
+            return false; // Invalid direction
+        }
+
+        int col = fromCol + dCol;
+        int row = fromRow + dRow;
+
+        while (col != toCol || row != toRow) {
+            String square = "" + (char) col + (char) row;
+
+            if (currentMap.containsValue(square)) {
+                return false; // Path is blocked
+            }
+
+            col += dCol;
+            row += dRow;
+        }
+
+        if (col < 'A' || col > 'H' || row < '1' || row > '8') {
+            return false; // Out of board
+        }
+
+        return true;
     }
 }
