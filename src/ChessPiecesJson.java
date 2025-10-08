@@ -1,3 +1,4 @@
+import java.io.IOException;
 import java.nio.file.*;
 import java.util.*;
 import jsonIO.JSONLoaderWriter;
@@ -7,6 +8,7 @@ public class ChessPiecesJson {
     static String turn = "WHITE";
     static int turnCounter;
     static Map<String, String> currentMap = new LinkedHashMap<>();
+    static Scanner scanner = new Scanner(System.in);
 
     public static void main(String[] args) throws Exception {
 
@@ -20,52 +22,46 @@ public class ChessPiecesJson {
         String choice = makeChoice();
 
         // Switch case?
-        if (choice.equals("LOAD")) {
-
-            String loaded = Files.readString(Paths.get("moves.json"));
-            movesMap = jsonLoader.parseJSON(loaded);
-
-            currentMap = new LinkedHashMap<>(startPieces());
-
-            if (movesMap.size() % 2 == 0) {
-                turn = "WHITE";
-            } else {
-                turn = "BLACK";
+        switch (choice) {
+            case "LOAD" -> {
+                String loaded = Files.readString(Paths.get("moves.json"));
+                movesMap = jsonLoader.parseJSON(loaded);
+                currentMap = new LinkedHashMap<>(startPieces());
+                if (movesMap.size() % 2 == 0) {
+                    turn = "WHITE";
+                } else {
+                    turn = "BLACK";
+                }   turnCounter = movesMap.size() + 1;
+                System.out.println("Spiel geladen. Du bist am Zug.\n");
+                movesMap.forEach((k, v) -> {
+                    String piece = v.substring(0, v.length() - 2);
+                    String field = v.length() >= 2 ? v.substring(v.length() - 2) : "";
+                    
+                    String pieceAtDestination = GameLogic.getKeyByValue(currentMap, field); // Check if capture
+                    if (pieceAtDestination != null && !pieceAtDestination.equals(piece)) { // Avoid self-capture
+                        System.out.println("Beim Laden: " + pieceAtDestination + " von " + field + " entfernt (Capture).");
+                        currentMap.remove(pieceAtDestination);
+                    }
+                    
+                    currentMap.put(piece, field);
+                }); System.out.println("Aktuelle Position der Figuren:\n" + currentMap + "\n");
             }
-            turnCounter = movesMap.size() + 1;
-            System.out.println("Spiel geladen. Du bist am Zug.\n");
-
-            movesMap.forEach((k, v) -> {
-                String piece = v.substring(0, v.length() - 2);
-                String field = v.length() >= 2 ? v.substring(v.length() - 2) : "";
-
-                String pieceAtDestination = GameLogic.getKeyByValue(currentMap, field); // Check if capture
-                if (pieceAtDestination != null && !pieceAtDestination.equals(piece)) { // Avoid self-capture
-                    System.out.println("Beim Laden: " + pieceAtDestination + " von " + field + " entfernt (Capture).");
-                    currentMap.remove(pieceAtDestination);
-                }
-
-                currentMap.put(piece, field);
-            });
-            System.out.println("Aktuelle Position der Figuren:\n" + currentMap + "\n");
-
-        } else if (choice.equals("NEW")) {
-
-            // make empty movesmap and save start positions of the pieces
-            movesMap = new LinkedHashMap<>();
-            currentMap = new LinkedHashMap<>(startPieces());
-
-            jsonLoader.writeToJSON(movesMap);
-            System.out.println("Neues Spiel gestartet. Du bist am Zug.\n");
-
-            turnCounter = 1;
-
-        } else if (choice.equals("EXIT")) {
-            System.out.println("Programm beendet.");
-            return;
-        } else {
-            System.out.println("Ungültige Eingabe. Programm beendet.");
-            return;
+            case "NEW" -> {
+                // make empty movesmap and save start positions of the pieces
+                movesMap = new LinkedHashMap<>();
+                currentMap = new LinkedHashMap<>(startPieces());
+                jsonLoader.writeToJSON(movesMap);
+                System.out.println("Neues Spiel gestartet. Du bist am Zug.\n");
+                turnCounter = 1;
+            }
+            case "EXIT" -> {
+                System.out.println("Programm beendet.");
+                return;
+            }
+            default -> {
+                System.out.println("Ungültige Eingabe. Programm beendet.");
+                return;
+            }
         }
 
         while (gameRunning) {
@@ -91,7 +87,7 @@ public class ChessPiecesJson {
                     System.out.println("Ungültiger Zug. Versuche es erneut.");
                     continue;
                 }
-            } catch (Exception e) {
+            } catch (IOException e) {
                 System.out.println("Ungültige Eingabe. Versuche es erneut.");
                 continue;
             }
@@ -107,7 +103,6 @@ public class ChessPiecesJson {
     }
 
     private static String getUserMove() {
-        Scanner scanner = new Scanner(System.in);
         if (turn.equals("BLACK")) {
             System.out.print("Schwarz zieht: ");
         } else {
@@ -150,10 +145,10 @@ public class ChessPiecesJson {
 
     private static String makeChoice() {
 
-        System.out.println("Möchtest du ein Spiel starten oder laden? (New/Load)\n" +
-                "Gib 'exit' ein, um das Programm zu beenden.\n");
-        Scanner scanner = new Scanner(System.in);
-
+        System.out.println("""
+                           M\u00f6chtest du ein Spiel starten oder laden? (New/Load)
+                           Gib 'exit' ein, um das Programm zu beenden.
+                           """);
         return scanner.nextLine().toUpperCase().trim();
     }
 }
