@@ -118,23 +118,23 @@ public class ChessPiecesJson {
         
         char[] files = "ABCDEFGH".toCharArray();
 
-        // Weiße Figuren hinten
+        // white pieces back
         String[] whiteBack = { "WR1", "WN1", "WB1", "WQ", "WK", "WB2", "WN2", "WR2" };
         for (int i = 0; i < files.length; i++) {
             currentMap.put(whiteBack[i], files[i] + "1");
         }
 
-        // Weiße Bauern
+        // white pawns
         for (int i = 0; i < files.length; i++) {
             currentMap.put("WP" + (i + 1), files[i] + "2");
         }
 
-        // Schwarze Bauern
+        // black pawns
         for (int i = 0; i < files.length; i++) {
             currentMap.put("BP" + (i + 1), files[i] + "7");
         }
 
-        // Schwarze Figuren hinten
+        // black pieces back
         String[] blackBack = { "BR1", "BN1", "BB1", "BQ", "BK", "BB2", "BN2", "BR2" };
         for (int i = 0; i < files.length; i++) {
             currentMap.put(blackBack[i], files[i] + "8");
