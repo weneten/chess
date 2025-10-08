@@ -25,7 +25,7 @@ public class GameLogic {
         }
 
         if (piece.startsWith("WP")) { // white pawn
-            boolean hasPawnMoved = pawnHasMoved(piece, movesMap);
+            boolean hasPawnMoved = pieceHasMoved(piece, movesMap);
 
             if (pieceAtDestination != null) { // only diagonal capture allowed
                 isValidMove = toField.equals(move(currentMap.get(piece), 1, 1))
@@ -44,7 +44,7 @@ public class GameLogic {
                 }
             }
         } else if (piece.startsWith("BP")) { // black pawn
-            boolean hasPawnMoved = pawnHasMoved(piece, movesMap);
+            boolean hasPawnMoved = pieceHasMoved(piece, movesMap);
 
             if (pieceAtDestination != null) { // only diagonal capture allowed
                 isValidMove = toField.equals(move(currentMap.get(piece), -1, 1))
@@ -119,6 +119,8 @@ public class GameLogic {
                         capturedPiece = pieceAtDestination; // capture
                     }
                     isValidMove = true; // Valid king move
+                } else if (colDiff == 2 && rowDiff == 0) {
+                    isValidMove = castlingPossible(piece, movesMap, currentMap, toField);
                 }
             }
         }
@@ -171,13 +173,13 @@ public class GameLogic {
         return null;
     }
 
-    private boolean pawnHasMoved(String pawn, Map<String, String> movesMap) {
+    private boolean pieceHasMoved(String piece, Map<String, String> movesMap) {
         for (String move : movesMap.values()) {
-            if (move.startsWith(pawn)) {
-                return true; // Der Pawn wurde schon bewegt
+            if (move.startsWith(piece)) {
+                return true; // piece was moved
             }
         }
-        return false; // Kein Move gefunden -> noch nicht bewegt
+        return false; // Pawn was never moved before
     }
 
     private boolean enPassantPossible(String pawn, String toField, Map<String, String> currentMap,
@@ -247,6 +249,70 @@ public class GameLogic {
             return toField.equals(targetSquare);
         }
 
+        return false;
+    }
+
+    private boolean castlingPossible(String piece, Map<String, String> movesMap,
+            Map<String, String> currentMap, String toField) {
+        if (pieceHasMoved(piece, movesMap)) {
+            return false; // King has moved
+        }
+
+        if (piece.equals("WK")) { // Queenside castling (O-O-O)
+            if (toField.equals("C1")) {
+                String rook = getKeyByValue(currentMap, "A1");
+                if (rook != null && rook.equals("WR1") && !pieceHasMoved("WR1", movesMap)) {
+                    
+                    // Check if squares B1, C1, D1 are empty
+                    if (!currentMap.containsValue("B1") && !currentMap.containsValue("C1") && !currentMap.containsValue("D1")) {
+                        // TODO: Add check for king not being in check, not passing through check
+
+                        currentMap.put("WR1", "D1"); // Move the rook from A1 to D1
+                        return true;
+                    }
+                }
+            } else if (toField.equals("G1")) { // Kingside castling (O-O)
+                String rook = getKeyByValue(currentMap, "H1");
+                if (rook != null && rook.equals("WR2") && !pieceHasMoved("WR2", movesMap)) {
+                    
+                    // Check if squares F1, G1 are empty
+                    if (!currentMap.containsValue("F1") && !currentMap.containsValue("G1")) {
+                        // TODO: Add check for king not being in check, not passing through check
+
+                        currentMap.put("WR2", "F1"); // Move the rook from H1 to F1
+                        return true;
+                    }
+                }
+            }
+        }
+
+        if (piece.equals("BK")) { // Queenside castling (O-O-O)
+            if (toField.equals("C8")) {
+                String rook = getKeyByValue(currentMap, "A8");
+                if (rook != null && rook.equals("BR1") && !pieceHasMoved("BR1", movesMap)) {
+
+                    // Check if squares B8, C8, D8 are empty
+                    if (!currentMap.containsValue("B8") && !currentMap.containsValue("C8") && !currentMap.containsValue("D8")) {
+                        // TODO: Add check for king not being in check, not passing through check
+
+                        currentMap.put("BR1", "D8"); // Move the rook from A8 to D8
+                        return true;
+                    }
+                }
+            } else if (toField.equals("G8")) { // Kingside castling (O-O)
+                String rook = getKeyByValue(currentMap, "H8");
+                if (rook != null && rook.equals("BR2") && !pieceHasMoved("BR2", movesMap)) {
+
+                    // Check if squares F8, G8 are empty
+                    if (!currentMap.containsValue("F8") && !currentMap.containsValue("G8")) {
+                        // TODO: Add check for king not being in check, not passing through check
+
+                        currentMap.put("BR2", "F8"); // Move the rook from H8 to F8
+                        return true;
+                    }
+                }
+            }
+        }
         return false;
     }
 
