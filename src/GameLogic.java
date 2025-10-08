@@ -1,5 +1,5 @@
-
 import java.util.Map;
+import java.util.Scanner;
 
 public class GameLogic {
 
@@ -249,6 +249,34 @@ public class GameLogic {
             return toField.equals(targetSquare);
         }
 
+        return false;
+    }
+
+    private boolean promotionPossible(String piece, String toField, Map<String, String> currentMap) {
+        if (piece.startsWith("WP") && toField.charAt(1) == '8') {
+            Scanner scanner = new Scanner(System.in);
+            System.out.print("Zu welcher Figur möchtest du deinen Bauern umwandeln: ");
+            String promoteTo = scanner.next();
+            scanner.nextLine();
+            scanner.close();
+            switch (promoteTo) {
+                case "R" -> {
+                    currentMap.remove(piece);
+                    currentMap.put("R" + piece, toField);
+                }
+                case "N" -> {
+
+                }
+                case "B" -> {
+
+                }
+                case "Q" -> {
+
+                }
+            }
+        } else if (piece.startsWith("BP") && toField.charAt(1) == '1') {
+
+        }
         return false;
     }
 
