@@ -56,10 +56,12 @@ public class ChessPiecesJson {
             }
             case "EXIT" -> {
                 System.out.println("Programm beendet.");
+                scanner.close();
                 return;
             }
             default -> {
                 System.out.println("Ungültige Eingabe. Programm beendet.");
+                scanner.close();
                 return;
             }
         }
@@ -97,9 +99,8 @@ public class ChessPiecesJson {
             } else {
                 turn = "WHITE";
             }
-
         }
-
+        scanner.close();
     }
 
     private static String getUserMove() {
