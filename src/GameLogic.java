@@ -238,7 +238,7 @@ public class GameLogic {
             return false;
         }
 
-        // Now check if our move (toField) matches the en passant capture square
+        // Check if (toField) matches the en passant capture square
         if (pawn.startsWith("WP")) {
             // White captures upwards
             String targetSquare = "" + lastCol + (char) (lastRow + 1);
