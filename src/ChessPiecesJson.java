@@ -21,8 +21,7 @@ public class ChessPiecesJson {
         // User makes a Choice what to do
         String choice = makeChoice();
 
-        // Switch case?
-        switch (choice) {
+        switch (choice) { // save or load game
             case "LOAD" -> {
                 String loaded = Files.readString(Paths.get("moves.json"));
                 movesMap = jsonLoader.parseJSON(loaded);
@@ -31,20 +30,35 @@ public class ChessPiecesJson {
                     turn = "WHITE";
                 } else {
                     turn = "BLACK";
-                }   turnCounter = movesMap.size() + 1;
+                }
+                turnCounter = movesMap.size() + 1;
                 System.out.println("Spiel geladen. Du bist am Zug.\n");
                 movesMap.forEach((k, v) -> {
                     String piece = v.substring(0, v.length() - 2);
                     String field = v.length() >= 2 ? v.substring(v.length() - 2) : "";
-                    
+
                     String pieceAtDestination = GameLogic.getKeyByValue(currentMap, field); // Check if capture
                     if (pieceAtDestination != null && !pieceAtDestination.equals(piece)) { // Avoid self-capture
-                        System.out.println("Beim Laden: " + pieceAtDestination + " von " + field + " entfernt (Capture).");
+                        System.out.println(
+                                "Beim Laden: " + pieceAtDestination + " von " + field + " entfernt (Capture).");
                         currentMap.remove(pieceAtDestination);
                     }
-                    
+
+                    if (piece.length() >= 4) { // if promotion happened (e.g. "QWP1") remove original pawn from map
+                        char promotedChar = piece.charAt(0); // e.g. 'Q'
+                        String originalPiece = piece.substring(1); // e.g. "WP2"
+                        if ((promotedChar == 'Q' || promotedChar == 'R' || promotedChar == 'B' || promotedChar == 'N')
+                                && (originalPiece.startsWith("WP") || originalPiece.startsWith("BP"))) {
+                            if (currentMap.containsKey(originalPiece)) {
+                                System.out.println("Beim Laden: " + originalPiece + " entfernt (Promotion)new.");
+                                currentMap.remove(originalPiece);
+                            }
+                        }
+                    }
+
                     currentMap.put(piece, field);
-                }); System.out.println("Aktuelle Position der Figuren:\n" + currentMap + "\n");
+                });
+                System.out.println("Aktuelle Position der Figuren:\n" + currentMap + "\n");
             }
             case "NEW" -> {
                 // make empty movesmap and save start positions of the pieces
@@ -80,11 +94,13 @@ public class ChessPiecesJson {
                 String piece = move.substring(0, move.length() - 2);
                 String toField = move.length() >= 2 ? move.substring(move.length() - 2) : "";
 
-                if (gameLogic.makeMove(piece, toField, currentMap, movesMap, turn)) {
-                    movesMap.put(String.valueOf(turnCounter), move);
-                    System.out.println("Zug " + turnCounter + ": " + move);
+                // call makeMove and check returned stored move (null = invalid)
+                String storedMove = gameLogic.makeMove(piece, toField, currentMap, movesMap, turn);
+                if (storedMove != null) {
+                    movesMap.put(String.valueOf(turnCounter), storedMove);
+                    System.out.println("Zug " + turnCounter + ": " + storedMove);
                     turnCounter++;
-                    jsonLoader.writeToJSON(movesMap); // Speichern nach Validierung
+                    jsonLoader.writeToJSON(movesMap); // save after every valid move
                 } else {
                     System.out.println("Ungültiger Zug. Versuche es erneut.");
                     continue;
@@ -115,7 +131,7 @@ public class ChessPiecesJson {
     }
 
     private static Map<String, String> startPieces() { // refactored just for Bothe
-        
+
         char[] files = "ABCDEFGH".toCharArray();
 
         // white pieces back
@@ -147,9 +163,9 @@ public class ChessPiecesJson {
     private static String makeChoice() {
 
         System.out.println("""
-                           M\u00f6chtest du ein Spiel starten oder laden? (New/Load)
-                           Gib 'exit' ein, um das Programm zu beenden.
-                           """);
+                M\u00f6chtest du ein Spiel starten oder laden? (New/Load)
+                Gib 'exit' ein, um das Programm zu beenden.
+                """);
         return scanner.nextLine().toUpperCase().trim();
     }
 }

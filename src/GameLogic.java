@@ -3,7 +3,11 @@ import java.util.Scanner;
 
 public class GameLogic {
 
-    public boolean makeMove(String piece, String toField, Map<String, String> currentMap,
+    private final Scanner scanner = new Scanner(System.in);
+
+    // Changed return type: String (null = invalid move, otherwise stored move
+    // string)
+    public String makeMove(String piece, String toField, Map<String, String> currentMap,
             Map<String, String> movesMap, String turn) {
         // TODO game Logic for moving pieces
 
@@ -13,15 +17,48 @@ public class GameLogic {
         // is valid move?
         String pieceAtDestination = getKeyByValue(currentMap, toField);
 
-        if (turn.equals("WHITE") && piece.contains("B")) { // return false if wrong color
-            return false;
-        } else if (turn.equals("BLACK") && piece.contains("W")) {
-            return false;
+        // early return if trying to move opponent's piece
+        if (turn.equals("WHITE")) { // check for moving black piece
+            if (piece != null && piece.length() >= 2) {
+                char first = piece.charAt(0);
+
+                // check for Bishop-Promotion
+                if (first == 'B' && piece.length() >= 4 && piece.charAt(2) == 'P') {
+                    if (piece.charAt(1) == 'B') {
+                        return null; // block e.g. BBP1
+                    }
+                } else if (first == 'B') { // check for normal black piece
+                    return null; // block e.g. BB1
+                }
+
+                // check for promoted pieces
+                if ((first == 'Q' || first == 'N' || first == 'R') && piece.charAt(1) == 'B') {
+                    return null;
+                }
+            }
+        } else if (turn.equals("BLACK")) { // check for moving white piece
+            if (piece != null && piece.length() >= 2) {
+                char first = piece.charAt(0);
+
+                // check for Bishop-Promotion
+                if (first == 'B' && piece.length() >= 4 && piece.charAt(2) == 'P') {
+                    if (piece.charAt(1) == 'W') {
+                        return null; // block e.g. BWP1
+                    }
+                } else if (first == 'W') { // check for normal white piece
+                    return null;
+                }
+
+                // check for promoted pieces
+                if ((first == 'Q' || first == 'N' || first == 'R') && piece.charAt(1) == 'W') {
+                    return null;
+                }
+            }
         }
 
         // early return if same color piece at destination
         if (pieceAtDestination != null && piece.charAt(0) == pieceAtDestination.charAt(0)) {
-            return false;
+            return null;
         }
 
         if (piece.startsWith("WP")) { // white pawn
@@ -36,7 +73,7 @@ public class GameLogic {
             } else { // normal move forward
                 isValidMove = toField.equals(move(currentMap.get(piece), 1, 0));
                 if (!hasPawnMoved) { // first move can be 2 fields
-                    int[][] directions = {{0, 1}};
+                    int[][] directions = { { 0, 1 } };
 
                     if (checkPathClear(currentMap.get(piece), toField, directions, currentMap)) {
                         isValidMove = isValidMove || toField.equals(move(currentMap.get(piece), 2, 0));
@@ -55,7 +92,7 @@ public class GameLogic {
             } else { // normal move forward
                 isValidMove = toField.equals(move(currentMap.get(piece), -1, 0));
                 if (!hasPawnMoved) { // first move can be 2 fields
-                    int[][] directions = {{0, -1}};
+                    int[][] directions = { { 0, -1 } };
 
                     if (checkPathClear(currentMap.get(piece), toField, directions, currentMap)) {
                         isValidMove = isValidMove || toField.equals(move(currentMap.get(piece), -2, 0));
@@ -88,7 +125,10 @@ public class GameLogic {
                     isValidMove = true; // Valid knight move
                 }
             }
-        } else if (piece.contains("B")) { // Bishop
+        } else if (piece.startsWith("BB") || piece.startsWith("WB") || piece.startsWith("BW")) { // Black Bishop or
+                                                                                                 // White Bishop or
+                                                                                                 // Bishop White from
+                                                                                                 // Promotion
             if (diagonalLineMove(piece, toField, currentMap)) {
                 if (pieceAtDestination != null) {
                     capturedPiece = pieceAtDestination; // capture
@@ -133,7 +173,7 @@ public class GameLogic {
             } else {
                 String lastMove = null;
                 for (String move : movesMap.values()) {
-                    lastMove = move; // Letztes Move holen
+                    lastMove = move; // get the last move
                 }
                 if (lastMove != null && lastMove.length() >= 4) {
                     capturedPiece = lastMove.substring(0, 3); // e.g. "WP1"
@@ -141,14 +181,33 @@ public class GameLogic {
             }
         }
 
-        if (isValidMove) { // If capture, remove the piece (empty targets need no action)
-            if (capturedPiece != null) {
-                System.out.println(capturedPiece + " geschlagen.");
-                currentMap.remove(capturedPiece);
-            }
-            currentMap.put(piece, toField);
+        if (!isValidMove) {
+            return null;
         }
-        return isValidMove;
+
+        // If capture, remove the piece
+        if (capturedPiece != null) {
+            System.out.println(capturedPiece + " geschlagen.");
+            currentMap.remove(capturedPiece);
+        }
+
+        currentMap.put(piece, toField); // Move the piece (may be overwritten by promotion)
+
+        // Check for promotion
+        String promotedPiece = promotion(piece, toField, currentMap);
+        if (promotedPiece != null) {
+            System.out.println(piece + " wurde zu " + promotedPiece + " umgewandelt.");
+        }
+
+        String storedMove; // If promotion occurred, stored move includes the promotion prefix (e.g.
+                           // QWP1B8)
+        if (promotedPiece != null) {
+            storedMove = promotedPiece + toField; // promotedPiece == e.g. "QWP1"
+        } else {
+            storedMove = piece + toField;
+        }
+
+        return storedMove;
     }
 
     private String move(String field, int rowDelta, int colDelta) {
@@ -252,32 +311,49 @@ public class GameLogic {
         return false;
     }
 
-    private boolean promotionPossible(String piece, String toField, Map<String, String> currentMap) {
+    private String promotion(String piece, String toField, Map<String, String> currentMap) {
         if (piece.startsWith("WP") && toField.charAt(1) == '8') {
-            Scanner scanner = new Scanner(System.in);
-            System.out.print("Zu welcher Figur möchtest du deinen Bauern umwandeln: ");
-            String promoteTo = scanner.next();
-            scanner.nextLine();
-            scanner.close();
-            switch (promoteTo) {
-                case "R" -> {
-                    currentMap.remove(piece);
-                    currentMap.put("R" + piece, toField);
-                }
-                case "N" -> {
+            String promoteTo;
 
+            while (true) {
+                System.out.print("Zu welcher Figur möchtest du deinen Bauern umwandeln (R, N, B, Q): ");
+                promoteTo = scanner.next().toUpperCase().trim();
+                if (promoteTo.length() == 0) {
+                    continue; // empty input, ask again
                 }
-                case "B" -> {
-
+                char choice = promoteTo.charAt(0);
+                if (choice == 'R' || choice == 'N' || choice == 'B' || choice == 'Q') {
+                    promoteTo = String.valueOf(choice);
+                    break; // valid input, exit loop
                 }
-                case "Q" -> {
-
-                }
+                System.out.println("Ungültige Eingabe. Bitte R, N, B oder Q eingeben.");
             }
+            String promotedToPiece = promoteTo + piece;
+            currentMap.remove(piece); // remove the pawn
+            currentMap.put(promotedToPiece, toField); // add the new piece
+            return promotedToPiece;
         } else if (piece.startsWith("BP") && toField.charAt(1) == '1') {
+            String promoteTo;
 
+            while (true) {
+                System.out.print("Zu welcher Figur möchtest du deinen Bauern umwandeln (R, N, B, Q): ");
+                promoteTo = scanner.next().toUpperCase().trim();
+                if (promoteTo.length() == 0) {
+                    continue; // empty input, ask again
+                }
+                char choice = promoteTo.charAt(0);
+                if (choice == 'R' || choice == 'N' || choice == 'B' || choice == 'Q') {
+                    promoteTo = String.valueOf(choice);
+                    break; // valid input, exit loop
+                }
+                System.out.println("Ungültige Eingabe. Bitte R, N, B oder Q eingeben.");
+            }
+            String promotedToPiece = promoteTo + piece;
+            currentMap.remove(piece); // remove the pawn
+            currentMap.put(promotedToPiece, toField); // add the new piece
+            return promotedToPiece;
         }
-        return false;
+        return null; // No promotion occurred
     }
 
     private boolean castlingPossible(String piece, Map<String, String> movesMap,
@@ -290,9 +366,10 @@ public class GameLogic {
             if (toField.equals("C1")) {
                 String rook = getKeyByValue(currentMap, "A1");
                 if (rook != null && rook.equals("WR1") && !pieceHasMoved("WR1", movesMap)) {
-                    
+
                     // Check if squares B1, C1, D1 are empty
-                    if (!currentMap.containsValue("B1") && !currentMap.containsValue("C1") && !currentMap.containsValue("D1")) {
+                    if (!currentMap.containsValue("B1") && !currentMap.containsValue("C1")
+                            && !currentMap.containsValue("D1")) {
                         // TODO: Add check for king not being in check, not passing through check
 
                         currentMap.put("WR1", "D1"); // Move the rook from A1 to D1
@@ -302,7 +379,7 @@ public class GameLogic {
             } else if (toField.equals("G1")) { // Kingside castling (O-O)
                 String rook = getKeyByValue(currentMap, "H1");
                 if (rook != null && rook.equals("WR2") && !pieceHasMoved("WR2", movesMap)) {
-                    
+
                     // Check if squares F1, G1 are empty
                     if (!currentMap.containsValue("F1") && !currentMap.containsValue("G1")) {
                         // TODO: Add check for king not being in check, not passing through check
@@ -320,7 +397,8 @@ public class GameLogic {
                 if (rook != null && rook.equals("BR1") && !pieceHasMoved("BR1", movesMap)) {
 
                     // Check if squares B8, C8, D8 are empty
-                    if (!currentMap.containsValue("B8") && !currentMap.containsValue("C8") && !currentMap.containsValue("D8")) {
+                    if (!currentMap.containsValue("B8") && !currentMap.containsValue("C8")
+                            && !currentMap.containsValue("D8")) {
                         // TODO: Add check for king not being in check, not passing through check
 
                         currentMap.put("BR1", "D8"); // Move the rook from A8 to D8
@@ -356,7 +434,7 @@ public class GameLogic {
 
         // Check if moving in a straight line (same row or same column)
         if (fromCol == toCol || fromRow == toRow) {
-            int[][] directions = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+            int[][] directions = { { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 } };
 
             if (checkPathClear(fromField, toField, directions, currentMap)) {
                 return true; // Valid straight line move
@@ -381,7 +459,7 @@ public class GameLogic {
 
         // Check for diagonal move: colDiff must equal rowDiff
         if (colDiff == rowDiff && colDiff > 0) {
-            int[][] diagonalDirections = {{1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
+            int[][] diagonalDirections = { { 1, 1 }, { 1, -1 }, { -1, 1 }, { -1, -1 } };
 
             if (checkPathClear(fromField, toField, diagonalDirections, currentMap)) {
                 return true; // Valid diagonal move
@@ -390,7 +468,8 @@ public class GameLogic {
         return false; // Not a diagonal move
     }
 
-    private boolean checkPathClear(String fromField, String toField, int[][] directions, Map<String, String> currentMap) {
+    private boolean checkPathClear(String fromField, String toField, int[][] directions,
+            Map<String, String> currentMap) {
         // Check if the path is clear for Pawn, Rook, Bishop, Queen
         char fromCol = fromField.charAt(0);
         char fromRow = fromField.charAt(1);
