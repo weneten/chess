@@ -50,7 +50,7 @@ public class ChessPiecesJson {
                         if ((promotedChar == 'Q' || promotedChar == 'R' || promotedChar == 'B' || promotedChar == 'N')
                                 && (originalPiece.startsWith("WP") || originalPiece.startsWith("BP"))) {
                             if (currentMap.containsKey(originalPiece)) {
-                                System.out.println("Beim Laden: " + originalPiece + " entfernt (Promotion)new.");
+                                System.out.println("Beim Laden: " + originalPiece + " entfernt (Promotion).");
                                 currentMap.remove(originalPiece);
                             }
                         }
